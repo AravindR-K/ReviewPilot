@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Review {
+  id            String    @id @default(uuid())
+  platform      String    // "google", "swiggy", "zomato", "form"
+  platformId    String?   // Original platform review ID (for dedup)
+  customerName  String
+  rating        Int?      // 1-5 stars
+  reviewText    String
+  language      String?   // "en", "ta", "hi", "tanglish", "hinglish"
+
+  status        String    @default("new_raw")
+
+  sentiment     String?   // "positive", "neutral", "negative"
+  topics        Json?     // ["taste", "delivery_time", ...]
+  urgency       String?   // "normal", "urgent"
+  urgencyReason String?
+
+  draftReply      String?
+  replyLanguage   String?
+  replyApprovedBy String?
+  replyApprovedAt DateTime?
+  finalReply      String?
+
+  isDuplicate   Boolean   @default(false)
+  isSpam        Boolean   @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tasks         Task[]
+
+  @@index([status])
+  @@index([platformId])
+  @@index([createdAt])
+  @@index([sentiment])
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  reviewId    String
+  review      Review   @relation(fields: [reviewId], references: [id])
+
+  team        String   // "kitchen", "delivery", "packaging", "management"
+  title       String
+  description String
+  priority    String   @default("normal") // "normal", "high", "urgent"
+  status      String   @default("open")   // "open", "in_progress", "done"
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([team])
+  @@index([status])
+  @@index([priority])
+}
+
+model InsightReport {
+  id              String   @id @default(uuid())
+  periodStart     DateTime
+  periodEnd       DateTime
+
+  totalReviews    Int
+  avgRating       Float?
+  ratingTrend     String?  // "improving", "stable", "declining"
+
+  topComplaints   Json     // [{topic, count, examples}]
+  topPraises      Json     // [{topic, count, examples}]
+  sentimentBreakdown Json? // {positive, neutral, negative}
+  suggestedAction String?
+  fullReport      String   // Markdown formatted
+
+  createdAt       DateTime @default(now())
+}
+
+model AgentStatus {
+  id             String    @id // "collector", "analyzer", "responder", "action", "insights"
+  isActive       Boolean   @default(true)
+  lastRunAt      DateTime?
+  lastError      String?
+  processedCount Int       @default(0)
+  updatedAt      DateTime  @updatedAt
+}

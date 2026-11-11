@@ -1,0 +1,19 @@
+{
+  "name": "reviewpilot",
+  "version": "1.0.0",
+  "description": "AI-powered restaurant review management system with 5 independent agents",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "db:migrate": "cd backend && npx prisma migrate dev",
+    "db:seed": "cd backend && npx prisma db seed",
+    "db:reset": "cd backend && npx prisma migrate reset --force",
+    "test": "cd backend && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
