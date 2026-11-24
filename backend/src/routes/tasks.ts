@@ -3,6 +3,8 @@ import { prisma } from '../index.js';
 import { UpdateTaskSchema } from '../schemas/task.schema.js';
 import { z } from 'zod';
 
+const pid = (req: Request) => req.params.id as string;
+
 export const taskRoutes = Router();
 
 // GET /summary — Complaint counts grouped by team and topic (last 7 days)
@@ -100,7 +102,7 @@ taskRoutes.patch('/:id', async (req: Request, res: Response) => {
     const parsed = UpdateTaskSchema.parse(req.body);
 
     const task = await prisma.task.findUnique({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
     });
 
     if (!task) {
@@ -109,7 +111,7 @@ taskRoutes.patch('/:id', async (req: Request, res: Response) => {
     }
 
     const updated = await prisma.task.update({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
       data: { status: parsed.status },
     });
 

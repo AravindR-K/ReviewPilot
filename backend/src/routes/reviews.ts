@@ -3,9 +3,7 @@ import { prisma } from '../index.js';
 import { CreateReviewSchema, ImportReviewsSchema, ApproveReviewSchema } from '../schemas/review.schema.js';
 import { z } from 'zod';
 
-function paramId(req: Request): string {
-  return req.params.id as string;
-}
+const pid = (req: Request) => req.params.id as string;
 
 export const reviewRoutes = Router();
 
@@ -93,7 +91,7 @@ reviewRoutes.get('/', async (req: Request, res: Response) => {
 reviewRoutes.get('/:id', async (req: Request, res: Response) => {
   try {
     const review = await prisma.review.findUnique({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
       include: { tasks: true },
     });
 
@@ -115,7 +113,7 @@ reviewRoutes.patch('/:id/approve', async (req: Request, res: Response) => {
     const parsed = ApproveReviewSchema.parse(req.body);
 
     const review = await prisma.review.findUnique({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
     });
 
     if (!review) {
@@ -129,7 +127,7 @@ reviewRoutes.patch('/:id/approve', async (req: Request, res: Response) => {
     }
 
     const updated = await prisma.review.update({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
       data: {
         status: 'reply_approved',
         replyApprovedBy: parsed.approvedBy,
@@ -153,7 +151,7 @@ reviewRoutes.patch('/:id/approve', async (req: Request, res: Response) => {
 reviewRoutes.patch('/:id/reject', async (req: Request, res: Response) => {
   try {
     const review = await prisma.review.findUnique({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
     });
 
     if (!review) {
@@ -167,7 +165,7 @@ reviewRoutes.patch('/:id/reject', async (req: Request, res: Response) => {
     }
 
     const updated = await prisma.review.update({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
       data: {
         status: 'analyzed',
         draftReply: null,
