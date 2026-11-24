@@ -3,6 +3,8 @@ import { prisma } from '../index.js';
 import { triggerInsights } from '../agents/worker.js';
 import { z } from 'zod';
 
+const pid = (req: Request) => req.params.id as string;
+
 export const insightRoutes = Router();
 
 const GenerateInsightsSchema = z.object({
@@ -42,7 +44,7 @@ insightRoutes.get('/', async (_req: Request, res: Response) => {
 insightRoutes.get('/:id', async (req: Request, res: Response) => {
   try {
     const report = await prisma.insightReport.findUnique({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
     });
 
     if (!report) {

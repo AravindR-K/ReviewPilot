@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../index.js';
 
 export const dashboardRoutes = Router();
@@ -71,7 +72,7 @@ dashboardRoutes.get('/stats', async (_req: Request, res: Response) => {
       where: {
         sentiment: 'negative',
         createdAt: { gte: thirtyDaysAgo },
-        topics: { not: null },
+        topics: { not: Prisma.JsonNull },
       },
       select: { topics: true },
     });

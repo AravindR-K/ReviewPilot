@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../index.js';
 import { triggerAllAgents } from '../agents/worker.js';
 
+const pid = (req: Request) => req.params.id as string;
+
 export const agentRoutes = Router();
 
 // GET / — List all agent statuses
@@ -10,7 +12,7 @@ agentRoutes.get('/', async (_req: Request, res: Response) => {
     const agents = await prisma.agentStatus.findMany({
       orderBy: { id: 'asc' },
     });
-    res.json({ agents });
+    res.json(agents);
   } catch (error) {
     console.error('Error listing agents:', error);
     res.status(500).json({ error: 'Failed to list agent statuses' });
@@ -21,7 +23,7 @@ agentRoutes.get('/', async (_req: Request, res: Response) => {
 agentRoutes.patch('/:id/toggle', async (req: Request, res: Response) => {
   try {
     const agent = await prisma.agentStatus.findUnique({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
     });
 
     if (!agent) {
@@ -30,7 +32,7 @@ agentRoutes.patch('/:id/toggle', async (req: Request, res: Response) => {
     }
 
     const updated = await prisma.agentStatus.update({
-      where: { id: req.params.id },
+      where: { id: pid(req) },
       data: { isActive: !agent.isActive },
     });
 
